@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Cat Expression Cam</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+
+            background: #111;
+            color: #fff;
+
+            font-family:
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            padding: 25px;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 0 0 8px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #999;
+            margin-bottom: 25px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: #1c1c1c;
+            border-radius: 18px;
+            padding: 16px;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .media {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+
+            background: #000;
+
+            border-radius: 12px;
+
+            overflow: hidden;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+
+            object-fit: cover;
+
+            transform: scaleX(-1);
+        }
+
+        #catImage {
+            width: 100%;
+            height: 100%;
+
+            object-fit: contain;
+
+            display: none;
+        }
+
+        .placeholder {
+            color: #555;
+            font-size: 22px;
+            text-align: center;
+        }
+
+        .expression {
+            margin-top: 15px;
+
+            text-align: center;
+
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .status {
+            margin-top: 8px;
+
+            text-align: center;
+
+            color: #999;
+
+            font-size: 14px;
+
+            min-height: 20px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+
+            margin-top: 20px;
+        }
+
+        button {
+            border: none;
+
+            background: #fff;
+            color: #111;
+
+            padding: 13px 28px;
+
+            border-radius: 10px;
+
+            font-size: 16px;
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .debug {
+            margin-top: 20px;
+
+            background: #181818;
+
+            border-radius: 12px;
+
+            padding: 15px;
+
+            font-family: monospace;
+
+            font-size: 13px;
+
+            color: #aaa;
+
+            display: none;
+        }
+
+        .debug div {
+            margin: 3px 0;
+        }
+
+        @media (max-width: 750px) {
+
+            body {
+                padding: 12px;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+<div class="app">
+
+    <h1>🐱 Cat Expression Cam</h1>
+
+    <div class="subtitle">
+        Make a face. The cat judges you.
+    </div>
+
+
+    <div class="grid">
+
+        <!-- CAMERA -->
+
+        <div class="panel">
+
+            <div class="panel-title">
+                You
+            </div>
+
+            <div class="media">
+
+                <video
+                    id="webcam"
+                    autoplay
+                    playsinline
+                    muted>
+                </video>
+
+            </div>
+
+            <div
+                id="expression"
+                class="expression">
+                Waiting...
+            </div>
+
+            <div
+                id="cameraStatus"
+                class="status">
+                Click Start Camera
+            </div>
+
+        </div>
+
+
+        <!-- CAT -->
+
+        <div class="panel">
+
+            <div class="panel-title">
+                Your Cat
+            </div>
+
+            <div class="media">
+
+                <div
+                    id="catPlaceholder"
+                    class="placeholder">
+                    🐱<br>
+                    Your cat is waiting...
+                </div>
+
+                <img
+                    id="catImage"
+                    alt="Cat meme">
+
+            </div>
+
+            <div
+                id="catName"
+                class="expression">
+                Waiting for you
+            </div>
+
+            <div
+                id="catStatus"
+                class="status">
+                Make an expression
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="controls">
+
+        <button id="startButton">
+            Start Camera
+        </button>
+
+    </div>
+
+
+    <div
+        id="debug"
+        class="debug">
+
+        <div id="debugSmile">
+            Smile: 0
+        </div>
+
+        <div id="debugJaw">
+            Jaw: 0
+        </div>
+
+        <div id="debugEyes">
+            Eyes: 0
+        </div>
+
+        <div id="debugBrow">
+            Brow: 0
+        </div>
+
+        <div id="debugBlink">
+            Blink: 0
+        </div>
+
+        <div id="debugFrown">
+            Frown: 0
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<script type="module">
+
+/*
+===========================================================
+CAT IMAGES
+===========================================================
+
+PUT YOUR DIRECT IMAGE URLs HERE.
+
+IMPORTANT:
+
+A Pinterest PAGE URL is NOT an image URL.
+
+For example, this:
+
+https://in.pinterest.com/asteroftheuniverse/silly-cat-memes
+
+is a Pinterest board.
+
+It cannot be used directly as:
+
+<img src="...">
+
+You need the actual image URL.
+
+You can also use local files:
+
+cats/happy.jpg
+cats/shocked.jpg
+cats/angry.jpg
+
+If you put the images in a "cats" folder next to index.html,
+this is actually the recommended approach.
+
+Example:
+
+project/
+│
+├── index.html
+│
+└── cats/
+    ├── happy.jpg
+    ├── shocked.jpg
+    ├── angry.jpg
+    ├── sad.jpg
+    ├── wink.jpg
+    └── neutral.jpg
+
+===========================================================
+*/
+
+const CATS = {
+
+    happy: {
+        name: "Happy Cat",
+        url: "cats/happy.jpg"
+    },
+
+    shocked: {
+        name: "SHOCKED CAT",
+        url: "cats/shocked.jpg"
+    },
+
+    angry: {
+        name: "Angry Cat",
+        url: "cats/angry.jpg"
+    },
+
+    sad: {
+        name: "Sad Cat",
+        url: "cats/sad.jpg"
+    },
+
+    wink: {
+        name: "Smug / Wink Cat",
+        url: "cats/wink.jpg"
+    },
+
+    sleepy: {
+        name: "Sleepy Cat",
+        url: "cats/sleepy.jpg"
+    },
+
+    silly: {
+        name: "Silly / Blep Cat",
+        url: "cats/silly.jpg"
+    },
+
+    kissy: {
+        name: "Kissy / Pout Cat",
+        url: "cats/kissy.jpg"
+    },
+
+    confused: {
+        name: "Confused Cat",
+        url: "cats/confused.jpg"
+    },
+
+    disgusted: {
+        name: "Disgusted Cat",
+        url: "cats/disgusted.jpg"
+    },
+
+    screaming: {
+        name: "Screaming / Laughing Cat",
+        url: "cats/screaming.jpg"
+    },
+
+    neutral: {
+        name: "Judging Cat",
+        url: "cats/neutral.jpg"
+    }
+
+};
+
+
+
+/*
+===========================================================
+MEDIAPIPE IMPORT
+===========================================================
+
+Use UNPKG's actual module file.
+
+===========================================================
+*/
+
+import {
+    FaceLandmarker,
+    FilesetResolver
+} from
+"https://unpkg.com/@mediapipe/tasks-vision@0.10.35/vision_bundle.mjs";
+
+
+
+/*
+===========================================================
+DOM ELEMENTS
+===========================================================
+*/
+
+const video =
+    document.getElementById("webcam");
+
+const startButton =
+    document.getElementById("startButton");
+
+const expressionElement =
+    document.getElementById("expression");
+
+const cameraStatus =
+    document.getElementById("cameraStatus");
+
+const catImage =
+    document.getElementById("catImage");
+
+const catPlaceholder =
+    document.getElementById("catPlaceholder");
+
+const catName =
+    document.getElementById("catName");
+
+const catStatus =
+    document.getElementById("catStatus");
+
+
+
+/*
+===========================================================
+DEBUG ELEMENTS
+===========================================================
+*/
+
+const debugSmile =
+    document.getElementById("debugSmile");
+
+const debugJaw =
+    document.getElementById("debugJaw");
+
+const debugEyes =
+    document.getElementById("debugEyes");
+
+const debugBrow =
+    document.getElementById("debugBrow");
+
+const debugBlink =
+    document.getElementById("debugBlink");
+
+const debugFrown =
+    document.getElementById("debugFrown");
+
+
+
+/*
+===========================================================
+STATE
+===========================================================
+*/
+
+let faceLandmarker = null;
+
+let cameraStarted = false;
+
+let lastVideoTime = -1;
+
+let currentExpression = null;
+
+let candidateExpression = null;
+
+let candidateSince = 0;
+
+let lastExpressionChange = 0;
+
+
+
+/*
+===========================================================
+SET STATUS
+===========================================================
+*/
+
+function setStatus(message) {
+
+    cameraStatus.textContent = message;
+
+}
+
+
+
+/*
+===========================================================
+LOAD MEDIAPIPE
+===========================================================
+*/
+
+async function initializeMediaPipe() {
+
+    try {
+
+        setStatus(
+            "Loading face detection model..."
+        );
+
+
+        /*
+        FilesetResolver needs the WASM directory.
+
+        IMPORTANT:
+        This version exists in the MediaPipe package.
+        */
+
+        const vision =
+            await FilesetResolver.forVisionTasks(
+
+                "https://unpkg.com/@mediapipe/tasks-vision@0.10.35/wasm"
+
+            );
+
+
+        /*
+        Create Face Landmarker.
+        */
+
+        faceLandmarker =
+            await FaceLandmarker.createFromOptions(
+
+                vision,
+
+                {
+
+                    baseOptions: {
+
+                        modelAssetPath:
+                            "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+
+                        delegate: "GPU"
+
+                    },
+
+
+                    runningMode: "VIDEO",
+
+                    numFaces: 1,
+
+                    outputFaceBlendshapes: true,
+
+                    minFaceDetectionConfidence: 0.5,
+
+                    minFacePresenceConfidence: 0.5,
+
+                    minTrackingConfidence: 0.5
+
+                }
+
+            );
+
+
+        setStatus(
+            "AI ready. Click Start Camera."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "MediaPipe initialization failed:",
+            error
+        );
+
+
+        setStatus(
+            "AI ERROR: " +
+            error.message
+        );
+
+
+        startButton.disabled = true;
+
+    }
+
+}
+
+
+
+/*
+===========================================================
+CAMERA
+===========================================================
+*/
+
+async function startCamera() {
+
+    if (!faceLandmarker) {
+
+        setStatus(
+            "Face detection is still loading..."
+        );
+
+        return;
+
+    }
+
+
+    try {
+
+        setStatus(
+            "Requesting camera permission..."
+        );
+
+
+        /*
+        Ask browser for webcam.
+
+        No microphone.
+        */
+
+        const stream =
+            await navigator.mediaDevices.getUserMedia({
+
+                video: {
+
+                    facingMode: "user",
+
+                    width: {
+                        ideal: 1280
+                    },
+
+                    height: {
+                        ideal: 720
+                    }
+
+                },
+
+                audio: false
+
+            });
+
+
+        /*
+        Connect camera to video element.
+        */
+
+        video.srcObject = stream;
+
+
+        await video.play();
+
+
+        cameraStarted = true;
+
+
+        startButton.style.display = "none";
+
+
+        setStatus(
+            "Camera running. Make a face!"
+        );
+
+
+        requestAnimationFrame(
+            detectExpression
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Camera error:",
+            error
+        );
+
+
+        if (
+            error.name ===
+            "NotAllowedError"
+        ) {
+
+            setStatus(
+                "Camera permission was denied. Allow camera access in Brave."
+            );
+
+        }
+
+        else if (
+            error.name ===
+            "NotFoundError"
+        ) {
+
+            setStatus(
+                "No webcam was found."
+            );
+
+        }
+
+        else if (
+            error.name ===
+            "NotReadableError"
+        ) {
+
+            setStatus(
+                "Camera is being used by another application."
+            );
+
+        }
+
+        else {
+
+            setStatus(
+                "Camera error: " +
+                error.name +
+                " — " +
+                error.message
+            );
+
+        }
+
+    }
+
+}
+
+
+
+/*
+===========================================================
+GET BLENDSHAPE VALUE
+===========================================================
+*/
+
+function getBlendshape(
+    categories,
+    name
+) {
+
+    const item =
+        categories.find(
+
+            category =>
+                category.categoryName === name
+
+        );
+
+
+    if (!item) {
+
+        return 0;
+
+    }
+
+
+    return item.score;
+
+}
+
+
+
+/*
+===========================================================
+CLASSIFY EXPRESSION
+===========================================================
+*/
+
+function classifyExpression(categories) {
+    const smile = (getBlendshape(categories, "mouthSmileLeft") + getBlendshape(categories, "mouthSmileRight")) / 2;
+    const jaw = getBlendshape(categories, "jawOpen");
+    const eyeWide = (getBlendshape(categories, "eyeWideLeft") + getBlendshape(categories, "eyeWideRight")) / 2;
+    const browDownLeft = getBlendshape(categories, "browDownLeft");
+    const browDownRight = getBlendshape(categories, "browDownRight");
+    const browDown = (browDownLeft + browDownRight) / 2;
+    const browInnerUp = getBlendshape(categories, "browInnerUp");
+    const blinkLeft = getBlendshape(categories, "eyeBlinkLeft");
+    const blinkRight = getBlendshape(categories, "eyeBlinkRight");
+    const blink = (blinkLeft + blinkRight) / 2;
+    const frown = (getBlendshape(categories, "mouthFrownLeft") + getBlendshape(categories, "mouthFrownRight")) / 2;
+    const pucker = getBlendshape(categories, "mouthPucker") || getBlendshape(categories, "mouthFunnel");
+    const tongue = getBlendshape(categories, "tongueOut");
+    const sneer = (getBlendshape(categories, "noseSneerLeft") + getBlendshape(categories, "noseSneerRight")) / 2;
+    const browAsym = Math.abs(browDownLeft - browDownRight);
+
+    const wink = (blinkLeft > 0.65 && blinkRight < 0.35) || (blinkRight > 0.65 && blinkLeft < 0.35);
+
+    /* Update debug display */
+    if (debugSmile) debugSmile.textContent = "Smile: " + smile.toFixed(2);
+    if (debugJaw) debugJaw.textContent = "Jaw: " + jaw.toFixed(2);
+    if (debugEyes) debugEyes.textContent = "Eyes: " + eyeWide.toFixed(2);
+    if (debugBrow) debugBrow.textContent = "Brow: " + browDown.toFixed(2);
+    if (debugBlink) debugBlink.textContent = "Blink: " + blink.toFixed(2);
+    if (debugFrown) debugFrown.textContent = "Frown: " + frown.toFixed(2);
+
+    /* Priority Order */
+    if (wink) return "wink";
+    if (tongue > 0.25) return "silly";
+    if (pucker > 0.40) return "kissy";
+    if (sneer > 0.35) return "disgusted";
+    if (jaw > 0.50 && smile > 0.40) return "screaming";
+    if (eyeWide > 0.40 && jaw > 0.30) return "shocked";
+    if (smile > 0.45) return "happy";
+    if (browDown > 0.45 && smile < 0.30) return "angry";
+    if (browAsym > 0.30 || (browInnerUp > 0.45 && browDown < 0.25)) return "confused";
+    if (frown > 0.30) return "sad";
+    if (blink > 0.65) return "sleepy";
+
+    return "neutral";
+}
+
+
+/*
+===========================================================
+DISPLAY CAT
+===========================================================
+*/
+
+function showCat(expression) {
+    const cat = CATS[expression];
+    if (!cat) return;
+
+    if (currentExpression === expression) return;
+    currentExpression = expression;
+
+    const formats = [".jpg", ".png", ".webp", ".jpeg", ".gif"];
+    let formatIndex = 0;
+    const basePath = "cats/" + expression;
+
+    catImage.onerror = () => {
+        formatIndex++;
+        if (formatIndex < formats.length) {
+            catImage.src = basePath + formats[formatIndex];
+        } else {
+            catImage.style.display = "none";
+            catPlaceholder.style.display = "block";
+            catPlaceholder.innerHTML = `🐱<br><strong>${cat.name}</strong><br><span style="font-size: 13px; color: #888;">Add <code>cats/${expression}.jpg</code> (or .png/.webp)</span>`;
+        }
+    };
+
+    catImage.onload = () => {
+        catImage.style.display = "block";
+        catPlaceholder.style.display = "none";
+    };
+
+    catImage.src = cat.url;
+    catName.textContent = "🐱 " + cat.name;
+    catStatus.textContent = "Expression: " + expression;
+}
+
+
+
+/*
+===========================================================
+STABLE EXPRESSION
+
+The user must hold the expression for a
+short period before changing the cat.
+
+This prevents rapid flickering.
+===========================================================
+*/
+
+function processStableExpression(
+    expression
+) {
+
+    const now =
+        performance.now();
+
+
+    /*
+    New candidate.
+    */
+
+    if (
+        candidateExpression !==
+        expression
+    ) {
+
+        candidateExpression =
+            expression;
+
+        candidateSince =
+            now;
+
+        return;
+
+    }
+
+
+    const heldTime =
+        now -
+        candidateSince;
+
+
+    const cooldown =
+        now -
+        lastExpressionChange;
+
+
+    /*
+    Require expression to remain
+    stable for 400ms.
+
+    Then enforce 700ms cooldown.
+    */
+
+    if (
+        heldTime >= 400 &&
+        cooldown >= 700
+    ) {
+
+        showCat(
+            expression
+        );
+
+
+        lastExpressionChange =
+            now;
+
+    }
+
+}
+
+
+
+/*
+===========================================================
+MAIN DETECTION LOOP
+===========================================================
+*/
+
+function detectExpression() {
+
+    if (!cameraStarted) {
+
+        return;
+
+    }
+
+
+    if (
+        !faceLandmarker
+    ) {
+
+        requestAnimationFrame(
+            detectExpression
+        );
+
+        return;
+
+    }
+
+
+    /*
+    Make sure video has dimensions.
+    */
+
+    if (
+        video.readyState >= 2 &&
+        video.videoWidth > 0 &&
+        video.videoHeight > 0
+    ) {
+
+
+        /*
+        Only process new video frames.
+        */
+
+        if (
+            video.currentTime !==
+            lastVideoTime
+        ) {
+
+            lastVideoTime =
+                video.currentTime;
+
+
+            const timestamp =
+                performance.now();
+
+
+            try {
+
+                const results =
+                    faceLandmarker.detectForVideo(
+                        video,
+                        timestamp
+                    );
+
+                if (results.faceBlendshapes && results.faceBlendshapes.length > 0) {
+                    const categories = results.faceBlendshapes[0].categories;
+                    const expression = classifyExpression(categories);
+                    expressionElement.textContent = expression.toUpperCase();
+                    processStableExpression(expression);
+                } else {
+                    expressionElement.textContent = "No face detected";
+                }
+            } catch (error) {
+                console.error("Detection error:", error);
+            }
+        }
+    }
+
+    requestAnimationFrame(detectExpression);
+}
+
+
+/*
+===========================================================
+INITIALIZATION & EVENT LISTENERS
+===========================================================
+*/
+
+startButton.addEventListener("click", startCamera);
+
+initializeMediaPipe();
+
+</script>
+</body>
+</html>
