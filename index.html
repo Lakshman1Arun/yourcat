@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -12,7 +13,8 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        html, body {
+        html,
+        body {
             width: 100%;
             height: 100%;
             height: 100dvh;
@@ -230,8 +232,15 @@
         }
 
         @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-8px);
+            }
         }
 
         .start-title {
@@ -331,24 +340,30 @@
                 top: 12px;
                 left: 12px;
             }
+
             .emotion-badge {
                 padding: 8px 14px;
             }
+
             .emotion-emoji {
                 font-size: 1.5rem;
             }
+
             .emotion-name {
                 font-size: 1rem;
             }
+
             .cat-card {
                 width: clamp(170px, 45vw, 220px);
             }
+
             .cat-name {
                 font-size: 0.95rem;
             }
         }
     </style>
 </head>
+
 <body>
 
     <!-- FULLSCREEN WEBCAM FEED -->
@@ -385,9 +400,9 @@
     <!-- START MODAL OVERLAY -->
     <div id="startModal" class="start-modal">
         <div class="start-card">
-            <div class="start-icon">🐱</div>
-            <h1 class="start-title">Cat Expression Cam</h1>
-            <p class="start-desc">Make a face into the camera! The AI detects your emotion and displays a matching cat meme positioned randomly on screen.</p>
+            <div class="start-icon">😛</div>
+            <h1 class="start-title">Expressive</h1>
+            <p class="start-desc">Give the damn permission. you'll see why</p>
             <button id="startButton" class="btn-primary">
                 <span>Start Camera</span>
             </button>
@@ -519,7 +534,7 @@
 
                 startModal.classList.add("hidden");
                 setStatus("Tracking face...");
-                
+
                 // Initial random placement of cat card
                 setTimeout(moveCatRandomly, 300);
 
@@ -622,7 +637,7 @@
 
             const jaw = getVal("jawOpen");
             const eyeWide = (getVal("eyeWideLeft") + getVal("eyeWideRight")) / 2;
-            
+
             const browDownLeft = getVal("browDownLeft");
             const browDownRight = getVal("browDownRight");
             const browDown = (browDownLeft + browDownRight) / 2;
@@ -663,10 +678,10 @@
             if (jaw > 0.45 && (smile > 0.35 || jaw > 0.60)) return "screaming";
             if (eyeWide > 0.28 && jaw > 0.28) return "shocked";
             if (smile > 0.35) return "happy";
-            
+
             // SAD DETECTION (Multiple sensitive triggers)
             if (sadScore > 0.26 || frown > 0.13 || (browInnerUp > 0.32 && smile < 0.15)) return "sad";
-            
+
             if (browDown > 0.32 && smile < 0.20 && sadScore < 0.25) return "angry";
             if (browAsym > 0.25 || (browInnerUp > 0.35 && browDown > 0.20)) return "confused";
             if (blink > 0.60 || (blink > 0.42 && jaw < 0.25 && smile < 0.15)) return "sleepy";
@@ -794,4 +809,5 @@
         initMediaPipe();
     </script>
 </body>
+
 </html>
